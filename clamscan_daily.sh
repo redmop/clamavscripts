@@ -50,10 +50,10 @@ done
 echo "" >> ${LOG}
 echo "-- Clamscan started at $(date)" >> ${LOG}
 echo "" >> ${LOG}
-echo "Command line: time find / -xdev -type d \( $FULL_EXCLUDES \) -prune -o \( -mtime -2 -o -ctime -2 \) -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}" >> ${LOG}
+echo "Command line: find / -xdev -type d \( $FULL_EXCLUDES \) -prune -o \( -mtime -2 -o -ctime -2 \) -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}" >> ${LOG}
 echo "" >> ${LOG}
 
-time find / -xdev -type d \( $FULL_EXCLUDES \) -prune -o \( -mtime -2 -o -ctime -2 \) -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}
+find / -xdev -type d \( $FULL_EXCLUDES \) -prune -o \( -mtime -2 -o -ctime -2 \) -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}
 check_scan
 
 echo "" >> ${LOG}
