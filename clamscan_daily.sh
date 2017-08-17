@@ -6,7 +6,7 @@ SUBJECT="VIRUS DETECTED ON $(hostname)!!!"
 EMAIL="USER@DOMAIN"
 # Log location
 LOG=/var/log/clamav/scan.log
-
+EXCLUDES=
 echo "" >> ${LOG}
 echo "***Start $0 at $(date)" >> ${LOG}
 
@@ -28,12 +28,15 @@ check_scan () {
     fi
  
 }
+for X in $EXCLUDES ; do
+        FULL_EXCLUDES="$FULL_EXCLUDES  -and -not -wholename '/$X/*'"
+done 
+echo find / -not -wholename '/sys/*' -and -not -wholename '/proc/*' $FULL_EXCLUDES -mtime -2 -type f -print0
+#find / -not -wholename '/sys/*' -and -not -wholename '/proc/*' $FULL_EXCLUDES -mtime -2 -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}
+#check_scan
  
-find / -not -wholename '/sys/*' -and -not -wholename '/proc/*' -mtime -2 -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}
-check_scan
- 
-find / -not -wholename '/sys/*' -and -not -wholename '/proc/*' -ctime -2 -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}
-check_scan
+#find / -not -wholename '/sys/*' -and -not -wholename '/proc/*' $FULL_EXCLUDES -ctime -2 -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}
+#check_scan
 
 echo "***End $0 at $(date)" >> ${LOG}
 echo "" >> ${LOG}
