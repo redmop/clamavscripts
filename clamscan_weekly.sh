@@ -51,10 +51,10 @@ done
 echo "" >> ${LOG}
 echo "-- Clamscan started at $(date)" >> ${LOG}
 echo "" >> ${LOG}
-echo "Command line: time clamscan -r / --exclude-dir=/sys/ $FULL_EXCLUDES --quiet --infected --log=${LOG} --cross-fs=no" >> ${LOG}
+echo "Command line: clamscan -r / --exclude-dir=/sys/ $FULL_EXCLUDES --quiet --infected --log=${LOG} --cross-fs=no" >> ${LOG}
 echo "" >> ${LOG}
 
-time clamscan -r / --exclude-dir=/sys/ $FULL_EXCLUDES --quiet --infected --log=${LOG} --cross-fs=no
+clamscan -r / --exclude-dir=/sys/ $FULL_EXCLUDES --quiet --infected --log=${LOG} --cross-fs=no
 check_scan
 
 echo "" >> ${LOG}
