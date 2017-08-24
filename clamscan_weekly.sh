@@ -27,10 +27,8 @@ check_scan () {
         echo "Subject: ${SUBJECT}" >>  ${EMAILMESSAGE}
         echo "Importance: High" >> ${EMAILMESSAGE}
         echo "X-Priority: 1" >> ${EMAILMESSAGE}
-        echo "$(tail -n 50 ${LOG})" >> ${EMAILMESSAGE}
-        #sendmail -t < ${EMAILMESSAGE}
+        #echo "$(tail -n 50 ${LOG})" >> ${EMAILMESSAGE}
         cat ${EMAILMESSAGE} | /bin/mail -a "$LOG" -s "$SUBJECT" "$EMAIL";
-        #/usr/bin/mutt -s "${SUBJECT}" $EMAIL < ${EMAILMESSAGE}
     fi
 
 }
@@ -39,7 +37,7 @@ check_scan () {
 echo >> $LOG;
 echo "-- Looking for ClamAV database updates at $(date)" >> $LOG;
 echo >> $LOG;
-/usr/bin/freshclam >> $LOG;
+/usr/bin/freshclam >> $LOG 2>&1;
 echo >> $LOG;
 
 
