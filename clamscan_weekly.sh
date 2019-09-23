@@ -3,11 +3,13 @@
 # email subject
 SUBJECT="VIRUS DETECTED ON $(hostname -f)!!!"
 # Email To ?
-EMAIL="USER@EXAMPLE.ORG"
+EMAIL="root"
 # Log location
 LOG=/var/log/clamav/clamscan-$(date +'%Y-%m-%d').log
 # Excluded Directories
 EXCLUDES=""
+INCLUDES=$(/usr/bin/findmnt --noheadings --output "TARGET" --list --types $(echo -n "zfs," ; /usr/bin/grep -v nodev /proc/filesystems | /usr/bin/paste -sd, - | /usr/bin/tr -d \\t)" | paste -sd" " - )
+
 
 echo "" >> ${LOG}
 echo "-- Start $0 at $(date)" >> ${LOG}
@@ -49,10 +51,12 @@ done
 echo "" >> ${LOG}
 echo "-- Clamscan started at $(date)" >> ${LOG}
 echo "" >> ${LOG}
-echo "Command line: clamscan -r / --exclude-dir=/sys/ $FULL_EXCLUDES --quiet --infected --log=${LOG} --cross-fs=no" >> ${LOG}
+echo "Command line: clamscan -r $INCLUDES --exclude-dir=/sys/ $FULL_EXCLUDES --quiet --infected --log=${LOG} --cross-fs=no" >> ${LOG}
+
+clamscan -r $INCLUDES --exclude-dir=/sys/ $FULL_EXCLUDES --quiet --infected --log=${LOG} --cross-fs=no
+
 echo "" >> ${LOG}
 
-clamscan -r / --exclude-dir=/sys/ $FULL_EXCLUDES --quiet --infected --log=${LOG} --cross-fs=no
 check_scan
 
 echo "" >> ${LOG}
@@ -63,7 +67,7 @@ echo "" >> ${LOG}
 echo "-- Cleaning Log Files at $(date)" >> ${LOG}
 echo "" >> ${LOG}
 
-find /var/log/clamav -mtime 30 -exec rm -v {} \;
+find /var/log/clamav -mtime +30 -exec rm  {} \;
 
 echo "" >> ${LOG}
 echo "***End $0 at $(date)" >> ${LOG}
