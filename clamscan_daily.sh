@@ -3,11 +3,14 @@
 # email subject
 SUBJECT="VIRUS DETECTED ON $(hostname -f)!!!"
 # Email To ?
-EMAIL="USER@EXAMPLE.ORG"
+EMAIL="root"
 # Log location
 LOG=/var/log/clamav/clamscan-$(date +'%Y-%m-%d').log
 # Excluded Directories
 EXCLUDES=""
+INCLUDES=$(/usr/bin/findmnt --noheadings --output "TARGET" --list --types $(echo -n "zfs," ; /usr/bin/grep -v nodev /proc/filesystems | /usr/bin/paste -sd, - | /usr/bin/tr -d \\t)" | paste -sd" " -)
+
+FILES_TO_SCAN=$(mktemp -t clamscan.XXXXXX) || exit 1
 
 echo "" >> ${LOG}
 echo "-- Start $0 at $(date)" >> ${LOG}
@@ -48,10 +51,24 @@ done
 echo "" >> ${LOG}
 echo "-- Clamscan started at $(date)" >> ${LOG}
 echo "" >> ${LOG}
-echo "Command line: find / -xdev -type d \( $FULL_EXCLUDES \) -prune -o \( -mtime -2 -o -ctime -2 \) -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}" >> ${LOG}
+#echo "Command line: find / -xdev -type d \( $FULL_EXCLUDES \) -prune -o \( -mtime -2 -o -ctime -2 \) -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}" >> ${LOG}
+echo "Command line:" >> ${LOG}
+
+
+#find $INCLUDES -xdev -type f \( -mtime 2 -o -ctime 2 \) -print0 | xargs -0 -r ls -l 
+# -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}
+#find $INCLUDES -xdev -type d \( $FULL_EXCLUDES \) -prune -o \( -mtime -2 -o -ctime -2 \) -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}
+
+echo "    find: find $INCLUDES -xdev -type d \( $FULL_EXCLUDES \) -prune -o \( -mtime -2 -o -ctime -2 \) -type f -fprint $FILES_TO_SCAN" >> ${LOG}
+find $INCLUDES -xdev -type d \( $FULL_EXCLUDES \) -prune -o \( -mtime -2 -o -ctime -2 \) -type f -fprint $FILES_TO_SCAN
+
+echo "    clamscan: clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG} -f $FILES_TO_SCAN |grep -v "No such file or directory" "  >> ${LOG}
+clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG} -f $FILES_TO_SCAN >> ${LOG} 2>&1
+
 echo "" >> ${LOG}
 
-find / -xdev -type d \( $FULL_EXCLUDES \) -prune -o \( -mtime -2 -o -ctime -2 \) -type f -print0 | xargs -0 -r clamscan --exclude-dir=/proc/ --exclude-dir=/sys/ --quiet --infected --log=${LOG}
+rm  $FILES_TO_SCAN
+
 check_scan
 
 echo "" >> ${LOG}
@@ -62,8 +79,9 @@ echo "" >> ${LOG}
 echo "-- Cleaning Log Files at $(date)" >> ${LOG}
 echo "" >> ${LOG}
 
-find /var/log/clamav -mtime 30 -exec rm -v {} \;
+find /var/log/clamav -mtime +30 -exec rm  {} \;
 
 echo "" >> ${LOG}
 echo "***End $0 at $(date)" >> ${LOG}
 echo "" >> ${LOG}
+
